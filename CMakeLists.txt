@@ -87,15 +87,16 @@ endif()
 install(TARGETS MD_AI-style
     BUNDLE DESTINATION .
     RUNTIME DESTINATION bin
+    COMPONENT Runtime
 )
-install(FILES LICENSE THIRD_PARTY_NOTICES.md DESTINATION .)
+install(FILES LICENSE THIRD_PARTY_NOTICES.md DESTINATION . COMPONENT Runtime)
 
 qt_generate_deploy_app_script(
     TARGET MD_AI-style
     OUTPUT_SCRIPT deployScript
     NO_UNSUPPORTED_PLATFORM_ERROR
 )
-install(SCRIPT ${deployScript})
+install(SCRIPT ${deployScript} COMPONENT Runtime)
 
 if(BUILD_TESTING)
     find_package(Qt6 6.5 REQUIRED COMPONENTS Test)
