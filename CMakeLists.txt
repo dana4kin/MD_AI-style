@@ -85,7 +85,7 @@ if(APPLE)
 endif()
 
 install(TARGETS MD_AI-style
-    BUNDLE DESTINATION .
+    BUNDLE DESTINATION . COMPONENT Runtime
     RUNTIME DESTINATION bin
     COMPONENT Runtime
 )
