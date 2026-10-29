@@ -54,6 +54,8 @@ target_link_libraries(MD_AI-style PRIVATE
     md4c-html
 )
 
+target_include_directories(MD_AI-style PRIVATE "${md4c_SOURCE_DIR}/src")
+
 target_compile_definitions(MD_AI-style PRIVATE
     MD_AI_STYLE_VERSION="${PROJECT_VERSION}"
     QT_NO_CAST_FROM_ASCII
@@ -103,6 +105,7 @@ if(BUILD_TESTING)
         resources/resources.qrc
     )
     target_link_libraries(MarkdownRendererTests PRIVATE Qt6::Core Qt6::Test md4c-html)
+    target_include_directories(MarkdownRendererTests PRIVATE "${md4c_SOURCE_DIR}/src")
     target_compile_definitions(MarkdownRendererTests PRIVATE QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII)
     add_test(NAME MarkdownRendererTests COMMAND MarkdownRendererTests)
 endif()
