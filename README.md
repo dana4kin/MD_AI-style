@@ -27,7 +27,7 @@ archive for your operating system:
 
 - `MD_AI-style-Windows-x64.zip`
 - `MD_AI-style-Linux-x64.tar.gz`
-- `MD_AI-style-macOS-universal.dmg`
+- `MD_AI-style-macOS-arm64.dmg`
 
 No separate Qt installation is required.
 

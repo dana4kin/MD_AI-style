@@ -27,9 +27,9 @@ jobs:
           - name: Linux x64
             os: ubuntu-22.04
             artifact: MD_AI-style-Linux-x64
-          - name: macOS universal
+          - name: macOS arm64
             os: macos-14
-            artifact: MD_AI-style-macOS-universal
+            artifact: MD_AI-style-macOS-arm64
     runs-on: ${{ matrix.os }}
 
     steps:
