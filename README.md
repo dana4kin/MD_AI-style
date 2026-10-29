@@ -48,7 +48,7 @@ MD_AI-style README.md
 
 Requirements:
 
-- CMake 3.24 or newer
+- CMake 3.28 or newer
 - C++20 compiler
 - Qt 6.5 or newer with `Qt WebEngine`
 - Git, used by CMake to fetch the pinned MD4C source

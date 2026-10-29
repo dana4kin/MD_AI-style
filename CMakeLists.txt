@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.28)
 
 project(MD_AI_style VERSION 1.0.0 LANGUAGES C CXX)
 
@@ -22,6 +22,7 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/mity/md4c.git
     GIT_TAG 729e6b8b320caa96328968ab27d7db2235e4fb47
     GIT_SHALLOW TRUE
+    EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(md4c)
 
