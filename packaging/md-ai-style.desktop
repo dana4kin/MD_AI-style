@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=MD_AI-style
+Comment=Offline Markdown viewer in an AI-chat style
+Exec=MD_AI-style %f
+Icon=md-ai-style
+Terminal=false
+Categories=Office;Viewer;
+MimeType=text/markdown;
+StartupNotify=true

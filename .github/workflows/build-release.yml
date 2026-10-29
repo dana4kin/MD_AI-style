@@ -1,0 +1,138 @@
+name: Build and release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  QT_VERSION: '6.8.3'
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x64
+            os: windows-2022
+            artifact: MD_AI-style-Windows-x64
+          - name: Linux x64
+            os: ubuntu-22.04
+            artifact: MD_AI-style-Linux-x64
+          - name: macOS universal
+            os: macos-14
+            artifact: MD_AI-style-macOS-universal
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libxkbcommon-x11-0 libxcb-cursor0 libnss3 libasound2 xvfb
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          modules: 'qtwebengine qtwebchannel qtpositioning'
+          cache: true
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Test
+        if: runner.os != 'Linux'
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Test on Linux
+        if: runner.os == 'Linux'
+        run: xvfb-run -a ctest --test-dir build -C Release --output-on-failure
+
+      - name: Install deployable tree
+        run: cmake --install build --config Release --prefix package/MD_AI-style
+
+      - name: Add Linux desktop metadata
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p package/MD_AI-style/share/applications
+          mkdir -p package/MD_AI-style/share/icons/hicolor/256x256/apps
+          cp packaging/md-ai-style.desktop package/MD_AI-style/share/applications/
+          cp resources/md-ai-style.png package/MD_AI-style/share/icons/hicolor/256x256/apps/md-ai-style.png
+
+      - name: Smoke test Windows package
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path package/MD_AI-style -Filter MD_AI-style.exe -Recurse | Select-Object -First 1
+          if (-not $exe) { throw 'MD_AI-style.exe is missing from the deployed package.' }
+          $webEngine = Get-ChildItem -Path package/MD_AI-style -Filter QtWebEngineProcess.exe -Recurse | Select-Object -First 1
+          if (-not $webEngine) { throw 'QtWebEngineProcess.exe is missing from the deployed package.' }
+
+      - name: Smoke test Linux package
+        if: runner.os == 'Linux'
+        run: |
+          test -x package/MD_AI-style/bin/MD_AI-style
+          find package/MD_AI-style -name 'QtWebEngineProcess' -type f | grep -q .
+
+      - name: Smoke test macOS package
+        if: runner.os == 'macOS'
+        run: |
+          test -d package/MD_AI-style/MD_AI-style.app
+          find package/MD_AI-style/MD_AI-style.app -name 'QtWebEngineProcess*' | grep -q .
+
+      - name: Package Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path package/MD_AI-style -DestinationPath ${{ matrix.artifact }}.zip
+
+      - name: Package Linux
+        if: runner.os == 'Linux'
+        run: tar -C package -czf ${{ matrix.artifact }}.tar.gz MD_AI-style
+
+      - name: Package macOS DMG
+        if: runner.os == 'macOS'
+        run: |
+          hdiutil create -volname MD_AI-style -srcfolder package/MD_AI-style/MD_AI-style.app -ov -format UDZO ${{ matrix.artifact }}.dmg
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            ${{ matrix.artifact }}.zip
+            ${{ matrix.artifact }}.tar.gz
+            ${{ matrix.artifact }}.dmg
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/*.zip
+            artifacts/*.tar.gz
+            artifacts/*.dmg
