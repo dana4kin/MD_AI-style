@@ -57,8 +57,10 @@ Requirements:
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
 cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
-cmake --install build --config Release --component Runtime --prefix out/MD_AI-style
+cmake --install build --config Release --component Runtime --prefix <absolute-output-path>/MD_AI-style
 ```
+
+Qt's deployment tool requires the install prefix to be an absolute path.
 
 ## Rendering boundary
 

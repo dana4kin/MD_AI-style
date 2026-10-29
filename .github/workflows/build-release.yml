@@ -68,7 +68,7 @@ jobs:
         run: xvfb-run -a ctest --test-dir build -C Release --output-on-failure
 
       - name: Install deployable tree
-        run: cmake --install build --config Release --component Runtime --prefix package/MD_AI-style
+        run: cmake --install build --config Release --component Runtime --prefix "${{ github.workspace }}/package/MD_AI-style"
 
       - name: Add Linux desktop metadata
         if: runner.os == 'Linux'
